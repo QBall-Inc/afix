@@ -2,6 +2,8 @@
 
 A protocol-agnostic governance interchange format for cross-enterprise agent interactions in financial services.
 
+> **Namespace notice:** Schema URIs in this repository (e.g., `finos.org/afix/v1/...`) are **proposed identifiers**, not live endpoints. AFIX is not a FINOS project and is not endorsed by or affiliated with FINOS. The `finos.org` namespace is used as an aspirational reference to indicate where these schemas *could* be registered if adopted by an open governance body. These URIs do not currently resolve. If AFIX is adopted under a different standards body or namespace, all schema `$id` values and capability keys will be updated accordingly.
+
 ---
 
 ## What is AFIX?
@@ -32,7 +34,7 @@ Bloomberg, FactSet, and LSEG have each independently built equivalent governance
 
 **A2A Binding** — AFIX extensions attach natively to the A2A Agent Card `capabilities.extensions[]` array and to per-message and per-task metadata fields. Uses protocol-native extension negotiation via the `X-A2A-Extensions` header. See [`/schemas/extensions/a2a-binding-v1.0.0.md`](/schemas/extensions/a2a-binding-v1.0.0.md).
 
-**MCP Binding** — AFIX registers as a named capability extension under SEP-2133 (`finos.org/afix-governance`), with a `_meta` fallback convention for servers not yet on SEP-2133, and gateway enforcement patterns for Kong, Apigee, and custom proxy deployments. See [`/schemas/extensions/mcp-binding-v1.0.0.md`](/schemas/extensions/mcp-binding-v1.0.0.md).
+**MCP Binding** — AFIX leverages the MCP [SEP-2133 extension framework](https://github.com/modelcontextprotocol/specification/discussions/2133) to register as a named capability extension (proposed namespace: `finos.org/afix-governance`), with a `_meta` fallback convention for servers not yet on SEP-2133, and gateway enforcement patterns for Kong, Apigee, Cloudflare, and custom proxy deployments. See [`/schemas/extensions/mcp-binding-v1.0.0.md`](/schemas/extensions/mcp-binding-v1.0.0.md).
 
 ---
 
