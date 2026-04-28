@@ -10,6 +10,7 @@ This directory contains the full evidentiary chain behind the AFIX governance sc
 | `stress-tests/` | Assumptions stress-test (Phase A), steelmanned counterarguments (Phase B), and hostile reviewer pass (Phase C) |
 | `decisions/` | Design decisions with rationale and external paper comparison |
 | `pilot/` | ACGP three-firm pilot architecture with measurable success criteria |
+| `landscape/` | Industry landscape analysis — governance capabilities shipping from Google Cloud, Oracle, AWS, Stripe, and Cloudflare (April 2026) |
 
 ## Research Methodology
 
