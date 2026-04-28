@@ -133,7 +133,7 @@ The consumer disputes the purchase. The Consumer Agent initiates a dispute with 
   - AP2 mandate chain (Intent/Cart/Payment) referenced via `ext/agentic-commerce` domain extension's `ap2_mandate_ref` hashes (in `_ext_refs`) — proving consumer authorization at each step.
 - **Governance Observer role:** The independent auditor can reconstruct the full governance state of the transaction from (a) A2A message logs (Steps 2, 4, 6) containing protocol-native AFIX metadata, and (b) MCP gateway logs (Steps 1, 5) containing `_meta` AFIX metadata plus gateway enforcement records. This is the audit reconstruction test.
 
-**What this tests:** Dispute resolution using only governance metadata. ISDA-analog bilateral liability adjudication with EMV proportional shift mechanism. GHR as evidence chain across transports. Full audit reconstruction by independent observer. The "100% dispute adjudication from metadata alone" criterion.
+**What this tests:** Dispute resolution using only governance metadata. ISDA-analog bilateral liability adjudication with EMV proportional shift mechanism. GHR as evidence chain across transports. Full audit reconstruction by independent observer. The "100% dispute adjudication from metadata alone" criterion. **Payments precedent:** Stripe's Compelling Evidence 3.0 implementation demonstrates that structured, machine-readable proof (matching customer identifiers, IPs, and shipping addresses against prior transactions) already shifts liability between counterparties in the card network — the governance metadata equivalent in payments.<sup>STRIPE-1</sup>
 
 ---
 
@@ -203,7 +203,7 @@ The interoperability question is: can a **dual-transport intermediary** (the Con
 
 | Metric | Target | Rationale |
 |--------|--------|-----------|
-| **Governance latency overhead per step** | <200ms | Governance metadata creation, attachment, and validation should not measurably degrade transaction UX. 200ms is perceptible but not blocking. Applies to advisory, research, compliance, and settlement tiers. Execution-tier workflows (matching engines, order routing at microsecond latency) are out of scope for AFIX. |
+| **Governance latency overhead per step** | <200ms | Governance metadata creation, attachment, and validation should not measurably degrade transaction UX. 200ms is perceptible but not blocking. Applies to advisory, research, compliance, and settlement tiers. Execution-tier workflows (matching engines, order routing at microsecond latency) are out of scope for AFIX. **Precedent:** Stripe validates tiered latency at scale — real-time synchronous checks at authorization time, asynchronous retries for off-session flows (intelligent dunning). The same tiering applies to AFIX: cached entitlement tokens for real-time systems, inline gateway validation for advisory systems.<sup>STRIPE-1</sup> |
 | **Agent Card verification** | <2s | Includes Agent Card fetch, certificate chain validation, compliance certification check, authority threshold evaluation. |
 | **Gateway enforcement latency (MCP only)** | <50ms | Gateway policy evaluation (validate `_meta` presence, verify LEI, check entitlement) must not become a bottleneck. Kong AI Gateway benchmarks sub-10ms for ACL checks. |
 | **GHR chain validation** | <100ms per hop | Hash chain verification, hop index validation, correlation ID lookup. Scales linearly with chain length. |
@@ -290,7 +290,7 @@ _Counter:_ A2A and MCP serve different interaction patterns. Convergence is poss
 **3. "No one will adopt governance that adds latency to agent transactions."**
 200ms overhead per step means 1.2 seconds added to a 6-step transaction.
 
-_Counter:_ FIX adds latency to order routing. SWIFT gpi adds latency to cross-border payments. Both succeeded because the governance benefit exceeded the cost. The <200ms target must be achieved — if governance overhead is materially higher, adoption will stall. The target explicitly excludes execution-tier workflows (matching engines, microsecond order routing), which remain governed by existing protocol-specific mechanisms.
+_Counter:_ FIX adds latency to order routing. SWIFT gpi adds latency to cross-border payments. Both succeeded because the governance benefit exceeded the cost. The <200ms target must be achieved — if governance overhead is materially higher, adoption will stall. The target explicitly excludes execution-tier workflows (matching engines, microsecond order routing), which remain governed by existing protocol-specific mechanisms. **Supporting evidence:** Stripe runs dozens of experiments weekly across their six-stage payment lifecycle, with 4x increase in experimentation pace over two years, achieving statistical significance within hours at volume.<sup>STRIPE-1</sup> This validates that governance overhead is measurable and optimizable at scale — the pilot must instrument governance metadata exchange for measurability from day one.
 
 **4. "Liability Metadata is legally unenforceable."**
 No court has adjudicated agent liability using metadata-defined allocation.
@@ -346,6 +346,9 @@ The risk that weighs least: **MCP and A2A converge.** The protocols serve genuin
 ### TAP
 - [Tier 1] TAP-1: Visa Developer, "Trusted Agent Protocol Specification," https://github.com/visa/trusted-agent-protocol
 - [Tier 1] TAP-2: Visa, "TAP — Three-Signature Model," RFC 9421 HTTP Message Signatures
+
+### Payments Scaling
+- [Tier 1] STRIPE-1: Stripe, "Optimizing payments at scale: How Stripe applies AI across the payment lifecycle," 2025, https://go.stripe.global/rs/072-MDK-283/images/Optimizing-payments-at-scale.pdf
 
 ### FHIR
 - [Tier 1] FHIR-1: HL7 FHIR R5, "CapabilityStatement Resource," https://hl7.org/fhir/R5/capabilitystatement.html
