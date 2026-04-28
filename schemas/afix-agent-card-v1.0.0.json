@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.org/afix/v1/agent-card",
+  "title": "AFIX Agent Card",
+  "description": "Organizational identity and governance posture for a financial services agent",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "organization",
+    "regulatory_jurisdiction",
+    "authorized_actions",
+    "escalation_chain"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "AFIX Agent Card schema version"
+    },
+    "organization": {
+      "type": "object",
+      "required": ["legal_name", "lei"],
+      "properties": {
+        "legal_name": {
+          "type": "string",
+          "description": "Registered legal entity name"
+        },
+        "lei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{20}$",
+          "description": "ISO 17442 Legal Entity Identifier"
+        },
+        "registrations": {
+          "type": "object",
+          "description": "Jurisdiction-specific registrations",
+          "properties": {
+            "crd_number": { "type": "string", "description": "FINRA Central Registration Depository" },
+            "mpid": { "type": "string", "description": "Market Participant Identifier" },
+            "fca_frn": { "type": "string", "description": "FCA Firm Reference Number" },
+            "mifid_lei": { "type": "string", "description": "MiFID II LEI for transaction reporting" }
+          }
+        }
+      }
+    },
+    "regulatory_jurisdiction": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Regulatory regimes under which this agent operates (e.g., ['SEC', 'FINRA', 'FCA'])"
+    },
+    "compliance_certifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["framework", "status"],
+        "properties": {
+          "framework": {
+            "type": "string",
+            "enum": ["SOC2_TYPE_I", "SOC2_TYPE_II", "ISO_27001", "ISO_42001", "PCI_DSS", "EU_AI_ACT_CONFORMITY"],
+            "description": "Compliance framework"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["CERTIFIED", "IN_PROGRESS", "EXPIRED", "NOT_APPLICABLE"]
+          },
+          "last_audit_date": { "type": "string", "format": "date" },
+          "auditor": { "type": "string" },
+          "certificate_uri": { "type": "string", "format": "uri" },
+          "expiry_date": { "type": "string", "format": "date" }
+        }
+      }
+    },
+    "authorized_actions": {
+      "type": "object",
+      "required": ["categories"],
+      "properties": {
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Action categories this agent is authorized to perform (e.g., ['TRADE_RECONCILIATION', 'DATA_QUERY'])"
+        },
+        "authority_thresholds": {
+          "type": "object",
+          "properties": {
+            "max_notional_usd": { "type": "number" },
+            "max_transaction_count_per_session": { "type": "integer" },
+            "requires_human_escalation_above_usd": { "type": "number" }
+          }
+        }
+      }
+    },
+    "escalation_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["level", "role", "contact_uri", "sla_minutes"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 1 },
+          "role": { "type": "string" },
+          "contact_uri": { "type": "string", "format": "uri" },
+          "sla_minutes": { "type": "integer", "description": "Maximum response time in minutes" }
+        }
+      }
+    },
+    "supported_protocols": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "protocol": { "type": "string", "enum": ["A2A", "MCP"] },
+          "version": { "type": "string" },
+          "endpoint": { "type": "string", "format": "uri" }
+        }
+      },
+      "description": "Transport protocols this agent supports, enabling counterparty protocol selection"
+    },
+    "supply_chain": {
+      "type": "object",
+      "description": "AI model provenance and supply chain attestation for cross-enterprise trust",
+      "properties": {
+        "ai_bom_reference": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to published AI Bill of Materials (CycloneDX ML-BOM, SPDX AI, or equivalent)"
+        },
+        "model_provenance": {
+          "type": "object",
+          "properties": {
+            "model_provider": { "type": "string", "description": "Model provider (e.g., 'Anthropic', 'OpenAI', 'internal')" },
+            "model_id": { "type": "string", "description": "Model identifier or version" },
+            "supply_chain_attestation": {
+              "type": "string",
+              "format": "uri",
+              "description": "URI to signed attestation of model supply chain integrity"
+            }
+          }
+        }
+      }
+    },
+    "interop_declarations": {
+      "type": "object",
+      "description": "Declarations of compatibility with peer protocol layers",
+      "properties": {
+        "ap2_mandates": { "type": "boolean", "default": false },
+        "ucp_capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Supported UCP capabilities (e.g., ['checkout', 'order_management'])"
+        },
+        "tap_registered": { "type": "boolean", "default": false }
+      }
+    }
+  }
+}

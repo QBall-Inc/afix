@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.org/afix/v1/governance-hop-record",
+  "title": "AFIX Governance Hop Record",
+  "description": "Append-only governance record for a single delegation hop in a multi-agent chain. One GHR per hop, hash-linked to form a tamper-evident chain. Correlation key: actor_lei:chain_id:hop_index.",
+  "type": "object",
+  "required": ["chain", "liability", "compliance_event", "compensation"],
+  "properties": {
+    "chain": {
+      "type": "object",
+      "description": "Chain integrity fields — uniquely identify this hop within the governance chain",
+      "required": ["actor_lei", "hop_index", "chain_id", "total_hops"],
+      "properties": {
+        "actor_lei": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{20}$",
+          "description": "ISO 17442 Legal Entity Identifier of the institution acting at this hop (required)"
+        },
+        "hop_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based position of this hop in the delegation chain (0 = originator)"
+        },
+        "parent_hash": {
+          "type": "string",
+          "description": "SHA-256 hash of the preceding GHR. Null for hop_index 0 (originator). Forms tamper-evident chain.",
+          "nullable": true
+        },
+        "chain_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Immutable chain correlation ID assigned at origination, analogous to SWIFT UETR. Carried unchanged across all hops."
+        },
+        "total_hops": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Current chain length at the time this GHR was created. Updated at each delegation."
+        }
+      }
+    },
+    "liability": {
+      "type": "object",
+      "description": "Liability attestation for this hop",
+      "required": ["model", "attestation"],
+      "properties": {
+        "model": {
+          "type": "string",
+          "enum": ["ORIGINATOR", "EXECUTOR", "PROPORTIONAL", "CHAIN_OF_CUSTODY", "NEGOTIATED"],
+          "description": "Liability model governing this hop. Set at chain origination and carried forward."
+        },
+        "attestation": {
+          "type": "string",
+          "description": "Machine-readable liability acceptance statement for this hop"
+        },
+        "governance_cert": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to this institution's governance certification (ISO 42001, NIST AI RMF, or equivalent)"
+        },
+        "jurisdiction": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "ISO 3166-1 alpha-2 country codes for applicable regulatory jurisdictions at this hop"
+        }
+      }
+    },
+    "compliance_event": {
+      "type": "object",
+      "description": "Governance audit record for this hop's delegation action",
+      "required": ["actor", "action", "target", "timestamp", "authority_basis", "outcome"],
+      "properties": {
+        "actor": {
+          "type": "string",
+          "description": "Agent identity of the delegating actor at this hop"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "TASK_INITIATED", "TASK_STATE_CHANGED", "ACTION_EXECUTED",
+            "ENTITLEMENT_VERIFIED", "AUTHORITY_ESCALATED", "DATA_ACCESSED",
+            "ANOMALY_DETECTED", "SESSION_TERMINATED", "LIABILITY_ASSIGNED",
+            "PAYMENT_AUTHORIZED"
+          ],
+          "description": "Governance action class — from the AFIX action-risk taxonomy"
+        },
+        "target": {
+          "type": "string",
+          "description": "Resource or agent that is the target of the delegated action"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of this delegation event"
+        },
+        "authority_basis": {
+          "type": "string",
+          "description": "Reference to the authorization that permits this delegation (policy URI, entitlement grant ID, or bilateral agreement reference)"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["PENDING", "COMPLETED", "FAILED", "COMPENSATED"],
+          "description": "Current outcome status of this hop. Mutable — updated as the hop progresses. The chain itself is append-only."
+        }
+      }
+    },
+    "compensation": {
+      "type": "object",
+      "description": "Compensation definition — what happens if this hop fails",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["REVERSAL", "NOTIFICATION", "ESCALATION", "NONE"],
+          "description": "Compensation mechanism to invoke on failure at this hop"
+        },
+        "handler": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to the Agent Card of the agent capable of executing the compensation action"
+        },
+        "timeout": {
+          "type": "string",
+          "description": "ISO 8601 duration string defining the window within which compensation is possible (e.g., PT30M for 30 minutes)"
+        },
+        "conditions": {
+          "type": "string",
+          "description": "Machine-readable conditions that trigger compensation at this hop"
+        }
+      }
+    }
+  }
+}

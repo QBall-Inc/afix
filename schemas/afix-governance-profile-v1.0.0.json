@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.org/afix/v1/profile",
+  "title": "AFIX Governance Profile",
+  "description": "Declares supported AFIX governance capabilities, versions, and domain extensions",
+  "type": "object",
+  "required": ["schema_version", "capabilities"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "agent_card": {
+          "type": "object",
+          "properties": {
+            "version": { "type": "string" },
+            "status": { "type": "string", "enum": ["ACTIVE", "DEPRECATED", "NOT_SUPPORTED"] },
+            "schema_uri": { "type": "string", "format": "uri" }
+          }
+        },
+        "compliance_event": {
+          "type": "object",
+          "properties": {
+            "version": { "type": "string" },
+            "status": { "type": "string", "enum": ["ACTIVE", "DEPRECATED", "NOT_SUPPORTED"] },
+            "schema_uri": { "type": "string", "format": "uri" }
+          }
+        },
+        "entitlement_interchange": {
+          "type": "object",
+          "properties": {
+            "version": { "type": "string" },
+            "status": { "type": "string", "enum": ["ACTIVE", "DEPRECATED", "NOT_SUPPORTED"] },
+            "schema_uri": { "type": "string", "format": "uri" }
+          }
+        },
+        "liability_metadata": {
+          "type": "object",
+          "properties": {
+            "version": { "type": "string" },
+            "status": { "type": "string", "enum": ["ACTIVE", "DEPRECATED", "NOT_SUPPORTED"] },
+            "schema_uri": { "type": "string", "format": "uri" }
+          }
+        },
+        "governance_hop_record": {
+          "type": "object",
+          "properties": {
+            "version": { "type": "string" },
+            "status": { "type": "string", "enum": ["ACTIVE", "DEPRECATED", "NOT_SUPPORTED"] },
+            "schema_uri": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "domain_extensions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["extension_uri", "version"],
+        "properties": {
+          "extension_uri": { "type": "string", "format": "uri" },
+          "version": { "type": "string" },
+          "domain": { "type": "string" },
+          "description": { "type": "string" },
+          "schema_uri": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "transport_bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["protocol", "version", "endpoint"],
+        "properties": {
+          "protocol": { "type": "string", "enum": ["A2A", "MCP", "REST"] },
+          "version": { "type": "string" },
+          "endpoint": { "type": "string", "format": "uri" }
+        }
+      }
+    }
+  }
+}

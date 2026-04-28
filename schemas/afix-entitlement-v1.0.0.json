@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.org/afix/v1/entitlement-interchange",
+  "title": "AFIX Entitlement Interchange",
+  "description": "Cross-enterprise entitlement declaration for agent data and action access",
+  "type": "object",
+  "required": [
+    "grant_id", "grantor", "grantee",
+    "effective_period", "entitlement_groups"
+  ],
+  "properties": {
+    "grant_id": { "type": "string", "format": "uuid" },
+    "grantor": {
+      "type": "object",
+      "required": ["organization_lei", "authorized_by"],
+      "properties": {
+        "organization_lei": { "type": "string", "pattern": "^[A-Z0-9]{20}$" },
+        "authorized_by": { "type": "string", "description": "Human authorizer identity" },
+        "authorization_date": { "type": "string", "format": "date-time" }
+      }
+    },
+    "grantee": {
+      "type": "object",
+      "required": ["organization_lei"],
+      "properties": {
+        "organization_lei": { "type": "string", "pattern": "^[A-Z0-9]{20}$" },
+        "agent_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Specific agent IDs entitled (omit for org-wide)"
+        }
+      }
+    },
+    "effective_period": {
+      "type": "object",
+      "required": ["start"],
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" },
+        "review_interval_days": { "type": "integer", "default": 90 }
+      }
+    },
+    "entitlement_groups": {
+      "type": "array",
+      "description": "Disjunctive (OR-ed) groups. Entries within a group are conjunctive (AND-ed).",
+      "items": {
+        "type": "object",
+        "required": ["group_id", "entitlements"],
+        "properties": {
+          "group_id": { "type": "string" },
+          "description": { "type": "string" },
+          "entitlements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["entitlement_type", "scope"],
+              "properties": {
+                "entitlement_type": {
+                  "type": "string",
+                  "enum": ["DATA_ACCESS", "ACTION_EXECUTION", "DELEGATION", "QUERY"]
+                },
+                "scope": {
+                  "type": "object",
+                  "properties": {
+                    "asset_classes": { "type": "array", "items": { "type": "string" } },
+                    "data_classifications": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"]
+                      }
+                    },
+                    "action_categories": { "type": "array", "items": { "type": "string" } },
+                    "max_risk_level": {
+                      "type": "string",
+                      "enum": ["LEVEL_4_SAFE", "LEVEL_3_STANDARD", "LEVEL_2_HIGH_RISK", "LEVEL_1_DESTRUCTIVE"]
+                    },
+                    "geographic_restrictions": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "ISO 3166-1 alpha-2 country codes"
+                    },
+                    "redistribution": {
+                      "type": "string",
+                      "enum": ["PROHIBITED", "DISPLAY_ONLY", "NON_DISPLAY_OK", "UNRESTRICTED"],
+                      "description": "Data redistribution rights — critical for Bloomberg/LSEG/FactSet data licensing"
+                    }
+                  }
+                },
+                "constraints": {
+                  "type": "object",
+                  "properties": {
+                    "max_records_per_query": { "type": "integer" },
+                    "max_notional_usd": { "type": "number" },
+                    "requires_human_approval_above_usd": { "type": "number" },
+                    "rate_limit_per_minute": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "revocation": {
+      "type": "object",
+      "properties": {
+        "emergency_revocation_uri": { "type": "string", "format": "uri" },
+        "revocation_propagation_sla_seconds": { "type": "integer", "default": 30 }
+      }
+    }
+  }
+}

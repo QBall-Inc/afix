@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.org/afix/v1/compliance-event",
+  "title": "AFIX Compliance Event",
+  "description": "Standardized audit event for cross-enterprise agent governance actions",
+  "type": "object",
+  "required": [
+    "event_id", "event_type", "timestamp",
+    "actor", "target", "action",
+    "authorization", "outcome"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique event identifier"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "TASK_INITIATED", "TASK_STATE_CHANGED", "ACTION_EXECUTED",
+        "ENTITLEMENT_VERIFIED", "AUTHORITY_ESCALATED", "DATA_ACCESSED",
+        "ANOMALY_DETECTED", "SESSION_TERMINATED", "LIABILITY_ASSIGNED",
+        "PAYMENT_AUTHORIZED"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC with millisecond precision"
+    },
+    "correlation": {
+      "type": "object",
+      "required": ["interaction_id"],
+      "properties": {
+        "interaction_id": {
+          "type": "string",
+          "description": "Transport-agnostic interaction identifier (A2A task_id or MCP request correlation)"
+        },
+        "session_id": { "type": "string" },
+        "parent_event_id": { "type": "string", "format": "uuid" },
+        "chain_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Multi-hop chain correlation ID (analogous to SWIFT UETR)"
+        }
+      }
+    },
+    "actor": {
+      "type": "object",
+      "required": ["agent_id", "organization_lei"],
+      "properties": {
+        "agent_id": { "type": "string" },
+        "organization_lei": { "type": "string", "pattern": "^[A-Z0-9]{20}$" },
+        "agent_card_hash": { "type": "string", "description": "SHA-256 of the Agent Card at interaction time" }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": ["agent_id", "organization_lei"],
+      "properties": {
+        "agent_id": { "type": "string" },
+        "organization_lei": { "type": "string", "pattern": "^[A-Z0-9]{20}$" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["action_type", "risk_classification"],
+      "properties": {
+        "action_type": { "type": "string" },
+        "risk_classification": {
+          "type": "string",
+          "enum": ["LEVEL_4_SAFE", "LEVEL_3_STANDARD", "LEVEL_2_HIGH_RISK", "LEVEL_1_DESTRUCTIVE"]
+        },
+        "regulatory_classification": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "required": ["status", "basis"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["AUTHORIZED", "DENIED", "ESCALATED", "PENDING_HUMAN_REVIEW"]
+        },
+        "basis": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "policy_uri": { "type": "string", "format": "uri" },
+              "policy_version": { "type": "string" },
+              "evaluator": {
+                "type": "string",
+                "enum": ["AUTOMATED_POLICY_ENGINE", "HUMAN_REVIEWER", "ESCALATION_CHAIN"]
+              }
+            }
+          }
+        },
+        "_ext_refs": {
+          "type": "object",
+          "description": "Reserved for domain extension cross-references. See AFIX domain extensions (e.g., ext/agentic-commerce) for protocol-specific fields.",
+          "additionalProperties": true
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["SUCCESS", "FAILURE", "PARTIAL", "TIMEOUT", "REJECTED"]
+        },
+        "detail": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "reconciliation": {
+          "type": "object",
+          "properties": {
+            "expected_state": { "type": "string" },
+            "actual_state": { "type": "string" },
+            "variance": { "type": "string" }
+          }
+        }
+      }
+    },
+    "reasoning_trace": {
+      "type": "object",
+      "properties": {
+        "trace_hash": { "type": "string", "description": "SHA-256 of the agent's reasoning trace" },
+        "trace_storage_uri": { "type": "string", "format": "uri" },
+        "model_id": { "type": "string" }
+      }
+    }
+  }
+}

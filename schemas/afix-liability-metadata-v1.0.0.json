@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://finos.org/afix/v1/liability-metadata",
+  "title": "AFIX Liability Metadata",
+  "description": "Liability assignment and dispute resolution for cross-enterprise agent workflows",
+  "type": "object",
+  "required": [
+    "assignment_id", "interaction_id",
+    "liability_model", "parties", "default_assignment"
+  ],
+  "properties": {
+    "assignment_id": { "type": "string", "format": "uuid" },
+    "interaction_id": {
+      "type": "string",
+      "description": "Transport-agnostic interaction reference"
+    },
+    "chain_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Multi-hop chain correlation ID when applicable"
+    },
+    "liability_model": {
+      "type": "string",
+      "enum": [
+        "ORIGINATOR_LIABLE",
+        "EXECUTOR_LIABLE",
+        "PROPORTIONAL",
+        "CHAIN_OF_CUSTODY",
+        "NEGOTIATED"
+      ],
+      "description": "Governing liability allocation model"
+    },
+    "parties": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["organization_lei", "role", "responsibility_scope"],
+        "properties": {
+          "organization_lei": { "type": "string", "pattern": "^[A-Z0-9]{20}$" },
+          "role": {
+            "type": "string",
+            "enum": ["ORIGINATOR", "EXECUTOR", "INTERMEDIARY", "VALIDATOR", "OBSERVER"]
+          },
+          "agent_id": { "type": "string" },
+          "responsibility_scope": {
+            "type": "object",
+            "properties": {
+              "actions": { "type": "array", "items": { "type": "string" } },
+              "liability_cap_usd": { "type": "number" },
+              "governance_certification_level": {
+                "type": "string",
+                "enum": ["TIER_3_FULL", "TIER_2_STANDARD", "TIER_1_BASIC", "UNCERTIFIED"],
+                "description": "EMV-inspired: higher certification reduces liability share under PROPORTIONAL model. TIER_3_FULL = ISO 42001 certified + domain-specific audit. TIER_2_STANDARD = ISO 42001 certified or equivalent (e.g., NIST AI RMF aligned). TIER_1_BASIC = documented AI governance policy without third-party certification. UNCERTIFIED = no formal governance posture."
+              },
+              "indemnification": {
+                "type": "object",
+                "properties": {
+                  "indemnified_by_lei": { "type": "string" },
+                  "agreement_uri": { "type": "string", "format": "uri" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "default_assignment": {
+      "type": "object",
+      "required": ["rule"],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "ORIGINATOR_BEARS_ALL",
+            "LAST_AGENT_BEARS",
+            "PROPORTIONAL_BY_ACTION_COUNT",
+            "PROPORTIONAL_BY_NOTIONAL",
+            "PROPORTIONAL_BY_CERTIFICATION",
+            "REFER_TO_MASTER_AGREEMENT"
+          ]
+        },
+        "master_agreement_uri": { "type": "string", "format": "uri" }
+      }
+    },
+    "dispute_resolution": {
+      "type": "object",
+      "properties": {
+        "mechanism": {
+          "type": "string",
+          "enum": ["BILATERAL_NEGOTIATION", "ARBITRATION", "REGULATORY_REFERRAL", "AUTOMATED_ADJUDICATION"]
+        },
+        "governing_law": { "type": "string" },
+        "arbitration_body": { "type": "string" },
+        "evidence_chain": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "description": "Ordered references to ComplianceEvent IDs forming the liability evidence chain"
+        }
+      }
+    }
+  }
+}
